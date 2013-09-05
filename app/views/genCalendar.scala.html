@@ -1,0 +1,226 @@
+@(logstate: Utils.LogState, mtable: Utils.Table, titles: List[(String, List[String])], lockable: Boolean)(canSelect: Boolean, viewPast: Boolean, manage: Boolean = false, lockView: Boolean = false, priorityView: Boolean = false)
+
+@import Utils.{DAYS, allUsersString}
+
+@defcheckbox(state: String, boxidx: Int, prefx: String) = {
+  <td onclick="setAndMayToggle(this,'@prefx');" id='b@boxidx' class="@prefx@state">
+     <input type="checkbox"/>
+  </td>
+}
+
+@defining(if(priorityView) "priority" else if(lockView) "lock" else "register"){prefix =>
+
+@if(lockView) {
+<div class="row-fluid">
+  <div class="span3">
+    @if(mtable.is_locked) {
+    <button class="btn btn-large btn-success"
+            type="button"
+            onClick="changeLock('/submit_unlock_month');">
+            Déverrouiller ce mois
+    </button>
+    } else {
+      @if(lockable) {
+      <button class="btn btn-large btn-danger"
+              type="button"
+              onClick="changeLock('/submit_relock_month');">
+              Verrouiller ce mois
+      </button>
+      } else {
+      <button class="btn btn-large disabled", 
+              type="button">
+              Ce mois est déverrouillé 
+      </button>
+      }
+    }
+    <br/><br/>
+  </div>
+</div>
+}
+
+@if(manage) {
+<div id="selectedcell" style='position: absolute; left: -9000em; top: -9000em'></div>
+}
+
+<div style="overflow : auto;">
+<form id="submit_calendar" action="foo">
+@************************ 
+ * Generating one month * 
+ ************************@
+ @defining(titles.foldLeft(Nil:List[String])((b,t) => b ::: List(t._1) ::: List.fill(t._2.size-1)(""))) {spacedTitles =>
+ @defining(titles.foldLeft(Nil:List[String])(_ ::: _._2)) {subtitles => 
+
+ @for(i <- 0 until mtable.nbrOfWeeks) {
+ <table class='table table-bordered week'>
+   <tr>
+     <th @if(canSelect) { onclick="fireWeek(this);" class='titleClick'}>
+       Semaine @{
+         if(mtable.weekOfYear >= 52)
+           if(i == 0) mtable.weekOfYear else i
+         else
+           i + mtable.weekOfYear
+       }
+     </th>
+         @for(ii <- 0 until spacedTitles.size) {
+           @if(canSelect && i == 0 && spacedTitles(ii) != "") {
+             <th onclick="fireTitle(@ii, @subtitles.size, @titles.find(_._1 == spacedTitles(ii)).get._2.size);" class='titleClick'>
+           } else {
+             <th class=@if(spacedTitles(ii) != "") {'title'}else{'empty'}>
+           }
+           @spacedTitles(ii)
+           </th>
+         }
+   </tr>
+   <tr>
+     <th class='empty'></th>
+      @for(ii <- 0 until subtitles.size) {
+        <th @if(canSelect && i == 0) {onclick="fireCol(@ii, @subtitles.size);" class='subtitleClick'} else { class='subtitle' }>
+          @subtitles(ii)
+        </th>
+      }
+   </tr>
+
+  @*********************** 
+   * Generating one week * 
+   ***********************@
+   @for(j <- 0 until DAYS.size) {
+     <tr>
+       <th class=@if(mtable.isOut(i,j)) {'daygray'} else {@if(canSelect) {'dayClick'} else {'day'}} @if(canSelect) {onclick="fireLine(this);"}>
+           @DAYS(j) @mtable.allDaysMonth(i)(j)
+       </th>
+
+      @***********************
+       *    The checkboxes   *
+       ***********************@
+       @for(idx <- 0 until subtitles.size) {
+         @if(mtable.isOut(i,j)) {
+           <td class='outmonth'></td>
+         } else {
+           @defining(mtable.allDays(i)(j)) {day => 
+           @defining(mtable.getState(day,idx)) {state => 
+           @defining(idx+subtitles.size*(j+7*i)) {boxidx =>
+           @defining(mtable.getCell(day,idx)) {optcell =>
+             @if(manage) {
+               @state match {
+                 case "Locked" => {
+                   <td class="register@state"></td>
+                 }
+                 case "Full" | "Registered" => {
+                   @defining(optcell.get) {cell =>
+                   <td class="register@{state}Manage" 
+                     onclick='click_cell(this,
+                       @day,
+                       "@Html(cell.t)",
+                       "@Html(cell.s)");'>
+                     <div class="user-manage">@cell.get_name</div>
+                   </td>
+                   }
+                 }
+                 case "Clear" | "Priority" => { 
+                     <td class="@{state}Manage" 
+                         onclick='click_cell(this,
+                          @day,
+                          "@Html(mtable.getTitles(day,idx)._1)",
+                          "@Html(mtable.getTitles(day,idx)._2)");'>
+                     </td>
+                 }
+                 case _ => {<td />}
+               }
+             } else {
+               @if(lockView) {
+                 @state match {
+                   case "Clear" => {
+                     @defcheckbox("Clear", boxidx, prefix)
+                   }
+                   case "Priority" => {
+                     @defcheckbox("Priority", boxidx, prefix)
+                   }
+                   case "Locked" => {
+                     @defcheckbox("Registered", boxidx, prefix)
+                   }
+                   case "Full" => {
+                     <td class='register@state'>
+                       <div class="user-manage">@optcell.get.get_name</div>
+                     </td>
+                   }
+                   case _ => {
+                     <td class="lock@state"></td>
+                   }
+                 }
+               } else {
+                 @* TODO clean this dirty fix and seperate view clearly*@
+                 @if(mtable.is_locked && !priorityView) {
+                   <td class='lockRegistered'></td>
+                 } else {
+                   @state match {
+                     case "Clear" if(viewPast || !mtable.isInPast(day)) => {
+                       @defcheckbox(state, boxidx, prefix)
+                     }
+                     case "Clear" => {
+                       <td class='inpast'></td>
+                     }
+                     case "Priority" if(viewPast || !mtable.isInPast(day)) => {
+                       @defcheckbox(state, boxidx, prefix)
+                     }
+                     case "Priority" => {
+                       <td class='inpastPriority'></td>
+                     }
+                     case "Registered" | "Full" => {
+                       <td class='register@state'>
+                         <div class="user-manage">@optcell.get.get_name</div>
+                       </td>
+                     }
+                     case _ => {
+                       <td class="register@state"></td>
+                     }
+                   }
+                 }
+               }
+             }
+           }
+           }
+           }
+           }
+         }
+       }   
+       </tr>
+     }
+    </table>
+    @if(i < mtable.nbrOfWeeks - 1) {
+      <div class="table-separator"></div>
+    }
+   }
+   }
+   }
+    <input id="submit" type="submit" value="Validate" />
+   </form>
+ </div>
+
+  <div class="table-separator"></div>
+  <div class="table-separator"></div>
+  
+  @if(manage) {
+    <div><h3>Champ libre:</h3></div>
+    <form id="freetext">
+      <textarea class="libre" style="font-size: 12pt; width: 99%;" id="misc" rows="10">@mtable.freetext</textarea>
+      <input value="Sauvegarder le texte" type="submit"/>
+    </form>
+  } else {
+    <div><h3>Notes:</h3></div>
+    <div style="font-size: 12pt">
+      <label>@for(line <- mtable.freetext.split("\\n")) { @line <br/> }</label>
+    </div>
+  }
+    
+  <div class="table-separator"></div>
+  <div class="table-separator"></div>
+
+  <script type="text/javascript">
+  $(function(){
+    set_gencal_submits('@prefix');
+  })
+  function get_all_users() {
+    return @Html(allUsersString);
+  }
+  </script>
+}

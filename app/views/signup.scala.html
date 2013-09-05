@@ -1,0 +1,120 @@
+@(logstate: Utils.LogState)
+
+@import Utils.{allUsers, adminUsers, normalUsers}
+
+@main {
+  <div id="contenu">
+    @* Form to add a new user *@
+    <h4>Inscription d'un nouvel utilisateur</h4>
+    <form class="form-horizontal" id="signup">
+      <div class="control-group">
+        <label class="control-label" for="abrege">Nom Affiché</label>
+        <div class="controls">
+          <input type="text" id="abrege" placeholder="Nom visible">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="complete">Nom d'utilisateur</label>
+        <div class="controls">
+          <input type="text" id="complete" placeholder="Nom d'utilisateur">
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+           <label class="checkbox">
+             <input type="checkbox" id="isadmin" value="false"> 
+               Cet utilisateur a les droits administrateur
+             </input>
+           </label>
+          <button type="submit" class="btn">Inscrire</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <div id='error_signup'>
+          </div>
+        </div>
+      </div>
+    </form>
+
+      <ul class="rules">
+        <li>
+          <label for="username"></label>
+          <label for="rule">Nom abregé:</label>
+          au plus 15 caractères du nom complet.
+        </li>
+        <li>
+          <label for="username"></label>
+          <label for="rule">Nom d'utilisateur:</label>
+          entre 3 et 15 minuscules
+        </li>
+      </ul>
+    </form>
+
+    <br /> 
+
+    <h4>Utilisateurs enregistrés</h4>
+    <ul class="rules inline " id=regusers>
+      @for(u <- allUsers) {
+        <div name="@u">
+          <li>@u</li>
+        </div>
+      }
+    </ul>
+    <br /> 
+
+    @* Form to reset user password. *@
+
+    <h4>Réinitialiser un mot de passe.</h4> 
+    <form class="form-inline" id="resetpass">
+      <select id="submit_reset">
+        @for(u <- allUsers) {
+          <option>@u</option>
+        }
+      </select>
+      <button type="submit" class="btn">Réinitialiser</button>
+    </form>
+    <div id='error_reset'></div>
+    <br/>
+
+    @* Form to give/remove administrative rights to a user. *@
+
+    <h4>Donner/retirer des droits administrateur.</h4>
+
+    <form class="form-inline" id="adminremove">
+      <select id="submit_remove">
+        @for(u <- adminUsers) {
+          <option>@u</option>
+        }
+      </select>
+      <button type="submit" class="btn">Retirer les droits</button>
+    </form>
+    <div id='error_admin'></div>
+    <br />
+
+    <form class="form-inline" id="adminadd">
+      <select id="submit_add">
+        @for(u <- normalUsers) {
+          <option>@u</option>
+        }
+      </select>
+      <button type="submit" class="btn">Ajouter les droits</button>
+    </form>
+    <div id='error_admin'></div>
+    <br />
+
+    @* Form to delete a user. *@
+
+    <h4>Suppression d'un utilisateur.</h4>
+    <form class="form-inline" id="deleteuser">
+      <select id="submit_delete">
+        @for(u <- allUsers) {
+          <option>@u</option>
+        }
+      </select>
+      <button type="submit" class="btn">Désinscrire</button>
+    </form>
+    <div id='error_delete'></div>
+    <br/>
+  </div>
+}(logstate, 0, 0)

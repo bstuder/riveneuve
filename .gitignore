@@ -1,0 +1,11 @@
+*.class
+*.log
+*.sh
+
+TODO
+
+target/
+project/*.new
+project/project/
+project/target
+dbscript/riveneuve/

@@ -1,0 +1,118 @@
+@(logstate: Utils.LogState)
+@main {	
+  <div id='contenu'>
+    <form class="form-horizontal" id="form_login">
+      <div class="control-group">
+        <label class="control-label" for="inputUsername">Nom d'utilisateur</label>
+        <div class="controls">
+          <input type="text" id="inputUsername" placeholder="Nom d'utilisateur">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="inputPassword">Mot de passe</label>
+        <div class="controls">
+          <input type="password" id="inputPassword" placeholder="Mot de passe">
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn">Connexion</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <div id='error_login'>
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <a id='logintoggle' onclick="toggleVisibility();">Première connexion ?</a>
+        </div>
+      </div>
+    </form>
+
+    <form class="form-horizontal" id="form_first" style="display: none">
+      <div class="control-group">
+        <label class="control-label" for="firstUsername">Nom d'utilisateur</label>
+        <div class="controls">
+          <input type="text" id="firstUsername" placeholder="Nom d'utilisateur">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="inputPassword1">Mot de passe</label>
+        <div class="controls">
+          <input type="password" id="inputPassword1" placeholder="Mot de passe">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="inputPassword2">Confirmez</label>
+        <div class="controls">
+          <input type="password" id="inputPassword2" placeholder="Mot de passe">
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn">Définir le mot de passe</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <div id='error_first'>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div id="oldie" class="alert" style="display:none">
+      Il semble que vous utilisez une vieille version d'Internet Explorer, et ce site Internet
+      est succeptible de ne pas fonctionner correctement. 
+      <br/><br/>
+      Veuillez mettre à jour votre navigateur ou en utiliser un autre:
+      <ul>
+        <li><a href='http://www.mozilla.org/fr/firefox/new/'>Firefox</a></li>
+        <li><a href='https://www.google.com/chrome?hl=fr'>Chrome</a></li>
+        <li><a href='http://fr.opera.com/'>Opera</a></li>
+        <li><a href='http://www.apple.com/fr/safari/'>Safari</a></li>
+      </ul>
+    </div>
+
+    <script text="text/javascript">
+    var ie = (function(){
+     "use-strict";
+      var ret, isTheBrowser,actualVersion,jscriptMap, jscriptVersion;
+      
+      isTheBrowser = false;
+  
+      jscriptMap = {
+        "5.5": "5.5",
+        "5.6": "6",
+        "5.7": "7",
+        "5.8": "8",
+        "9": "9",
+        "10": "10"
+      };
+  
+      jscriptVersion = new Function("/*@@cc_on return @@_jscript_version; @@*/")();
+      
+      if (jscriptVersion !== undefined) {
+        isTheBrowser = true;
+        actualVersion = jscriptMap[jscriptVersion];
+      }
+      
+      ret = {
+        isTheBrowser: isTheBrowser,
+        actualVersion: actualVersion
+      };
+      
+      return ret;
+    }());
+  
+    if(ie.isTheBrowser && ie.actualVersion < 10)
+      document.getElementById('oldie').style.cssText = "display: block";
+    </script>
+    <noscript>
+      <div class="alert">Ce site nécessite Javascript pour fonctionner correctement</div>
+    </noscript>
+  </div>
+}(logstate, 0, 0)

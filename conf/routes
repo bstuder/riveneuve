@@ -1,0 +1,61 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Views.index
+GET     /password_view              controllers.Views.password_view
+GET     /login_view                 controllers.Views.login_view
+
+GET     /submit_logout              controllers.Posts.submit_logout
+POST    /submit_login               controllers.Posts.submit_login
+POST    /submit_first               controllers.Posts.submit_first
+POST    /submit_password            controllers.Posts.submit_password
+
+# utils
+POST    /notified                   controllers.Posts.submit_notified
+
+# calendar
+GET     /calendar_view              controllers.Views.calendar_view(m: Int ?= 0, y: Int ?= 0)
+POST    /submit_calendar            controllers.Posts.submit_calendar
+
+# admin manage view
+POST    /submit_updateregistrations controllers.Posts.submit_updateregistrations
+
+# admin lock view
+GET     /lock_view                  controllers.Views.lock_view(m: Int ?= 0, y: Int ?= 0)
+POST    /submit_lock                controllers.Posts.submit_lock
+POST    /submit_unlock_month        controllers.Posts.submit_unlock_month
+POST    /submit_relock_month        controllers.Posts.submit_relock_month
+POST    /submit_remove_admin        controllers.Posts.submit_remove_admin
+POST    /submit_add_admin           controllers.Posts.submit_add_admin
+POST    /submit_freetext            controllers.Posts.submit_freetext
+
+# admin priority view
+GET     /priority_view              controllers.Views.priority_view(m: Int ?= 0, y: Int ?= 0)
+POST    /submit_priority            controllers.Posts.submit_priority
+
+# admin category view
+GET     /category_view              controllers.Views.category_view
+POST    /submit_delete_title        controllers.Posts.submit_delete_title
+POST    /submit_delete_subtitle     controllers.Posts.submit_delete_subtitle
+POST    /submit_add_title           controllers.Posts.submit_add_title
+POST    /submit_add_subtitle        controllers.Posts.submit_add_subtitle
+POST    /submit_rename_title        controllers.Posts.submit_rename_title
+POST    /submit_rename_subtitle     controllers.Posts.submit_rename_subtitle
+POST    /submit_update_titles       controllers.Posts.submit_update_titles
+
+# admin signup view
+GET     /signup_view                controllers.Views.signup_view
+POST    /submit_signup              controllers.Posts.submit_signup
+POST    /submit_delete              controllers.Posts.submit_delete
+POST    /submit_reset_password      controllers.Posts.submit_reset_password
+
+# admin statistic view
+GET     /statistics_view            controllers.Views.statistics_view(m: Int ?= 0, y: Int ?= 0)
+GET     /stat_csv                   controllers.Posts.stat_csv(m: Int ?= 0, y: Int ?= 0)
+GET     /calendar_csv               controllers.Posts.calendar_csv(m: Int ?= 0, y: Int ?= 0)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+

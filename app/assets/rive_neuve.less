@@ -1,0 +1,406 @@
+
+.gen_css(@color1, @color2, @color3)
+{
+
+@charset "UTF-8";
+
+// ****** \\  
+// SIGNUP \\
+// ****** \\
+@fsize: 120%;
+
+div.errorMes {
+  color: #FF0000;
+  font-size: @fsize;
+  height: 24px;
+}
+
+div.successMes {
+  color: #339900;
+  font-size: @fsize;
+  height: 24px;
+}
+
+// ***** \\  
+// TABLE \\
+// ***** \\
+table {
+  font-size: 9pt;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+table.week {
+  td {
+    @media print { height: 18px }
+  }
+  
+  input {
+   display: none;
+  }
+  
+  th {
+    &.dayClick {
+      cursor: pointer;
+    }
+
+    &.titleClick{
+      cursor: pointer;
+    }
+
+    &.subtitleClick {
+      cursor: pointer;
+    }
+
+    &.daygray {
+      background-color: #C0C0C0;
+    }
+
+    &.empty {
+    }
+  }
+}
+
+// ****** \\  
+// BUTTON \\
+// ****** \\
+input#submit {
+  display: none;
+}
+
+input.delete {
+  display: none;
+}
+
+img.imgDel, img.imgSub {
+  cursor: pointer;
+}
+
+// ***** \\  
+// CELLS \\
+// ***** \\
+@selected: #5555FF;
+@selected_over: #3333FF;
+
+.registerSelected {
+  background-color: @selected;
+  &:hover {
+    background-color: @selected_over;
+    cursor: pointer;
+    color: white;
+  }
+}
+
+.prioritySelected {
+  background-color: #FFDE00;
+
+  &:hover {
+    background-color: #DDAA00;
+    cursor: pointer;
+    color: white;
+  }
+}
+
+.availclick {
+  font-weight:bold;
+  background-color: @selected;
+  color: white;
+  &:hover {  
+    background-color: @selected_over;
+  }
+}
+
+.avail, .availManage {
+  font-weight:bold;
+  background-color: #FFCC77;
+
+  &:hover {
+    background-color: #FF8833;
+    color: white;
+    cursor: pointer;
+  }
+}
+
+.registerClear, .registerClearManage, .ClearManage {
+  background-color: white;
+
+  &:hover {
+    background-color: #8888FF;
+    cursor: pointer;
+    color: white;
+  }
+}
+
+.priorityClear, .priorityUnselected { 
+  background-color: white;
+
+  &:hover {
+    background-color: #FFDE00;
+    cursor: pointer;
+    color: white;
+  }
+}
+
+.prioritySelected, .priorityRegistered, .registerPriority, .priorityPriority, .PriorityManage {
+  background-color: #FFDE00;
+
+  &:hover {
+    background-color: #DDAA00;
+    cursor: pointer;
+    color: white;
+  }
+}
+
+.inpastPriority {
+  background-color: #FFDE00;
+}
+
+.registerPrioritySelected {
+  background-color: @selected; 
+
+  &:hover {
+    background-color: @selected_over; 
+    cursor: pointer;
+    color: white;
+  }
+}
+
+.outmonth {
+  background-color: #A8A8A8;
+}
+
+.availLock {
+  font-weight:bold;
+  background-color: #FFCC77;
+}
+
+.lockSelected, .lockRegistered, .lockLocked, .lockPrioritySelected {
+  background-color: #404040;
+  color: white;
+
+  &:hover {
+    background-color: #707070;
+    cursor: pointer;
+  }
+}
+
+.registerLocked {
+  background-color: #404040;
+  color: white;
+}
+
+.lockPriority {
+  background-color: #FFDE00;
+
+  &:hover {
+    background-color: #909090;
+    cursor: pointer;
+  }
+}
+
+.lockClear, .lockUnselected {
+  background-color: white;
+
+  &:hover {
+    background-color: #909090;
+    cursor: pointer;
+  }
+}
+
+.registerRegistered, .registerUnselected {
+  font-weight:bold;
+  background-color: #44DD44;
+}
+
+.registerRegisteredManage {
+  font-weight:bold;
+  background-color: #44DD44;
+
+  &:hover {
+    cursor: pointer;
+    background-color: #AAFFAA;
+  }
+}
+
+@background_full: #F75D5D;
+
+.registerFull, .lockFull {
+  font-weight:bold;
+  background-color: @background_full;
+}
+
+.registerFullManage {
+  font-weight:bold;
+  background-color: @background_full;
+  
+  &:hover {
+    cursor: pointer;
+    background-color: #FF0000;
+  }
+}
+
+.inpast {
+  background-color: #D8D8D8;
+}
+
+// ***** \\  
+// MENUS \\
+// ***** \\
+
+div#notify {
+  text-align: center;
+  background: #33CC00;
+
+  &:hover{
+    background: #11AA00;
+    color: #eeeeee;
+    cursor: pointer;
+  }
+}
+
+div#notnotify {
+  text-align: center;
+}
+
+#error_login, #error_first, #error_signup, #error_reset, #error_delete, #error_reset {  
+  //height: 60px;
+}
+
+.is_error {
+  color: #990000;
+}
+
+.is_info {
+  color: #009900;
+}
+
+div#fix {
+  height: 20px;
+}
+
+div#right {
+  text-align: right;
+}
+
+//USERLIST\\
+
+div#selectedcell {
+  padding: 10px;
+  color: black;
+  border: 1px solid black; 
+  background: rgba(0,160,209,0.85);
+  border-radius: 7px;
+}
+
+ul#userlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rules {
+  list-style: none;
+}
+
+li#userlist {
+}
+
+li > select {
+  border: solid 1px;
+  padding: 2px 8px;
+  border-radius: 7px;
+
+  &:hover {
+    color: #FFFFFF;
+    background: #777777;
+  }
+}
+
+input#submit_changes{
+  border: solid 1px;
+  padding: 2px 8px;
+  border-radius: 7px;
+
+  &:hover {
+    color: #FFFFFF;
+    background: #777777;
+  }
+}
+
+// ***** \\  
+// PRINT \\
+// ***** \\
+@media screen {
+  .print {
+    display: none;
+  }
+}
+
+@media print { 
+  table {
+    page-break-inside: auto !important;
+    border:solid #000 !important;
+    border-width:1px 0 0 1px !important;
+    border-collapse:collapse !important;
+  }
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+  th, td {
+    page-break-before: auto !important;
+    border:solid #000 !important;
+    border-width:0 1px 1px 0 !important;
+    border-collapse:collapse !important;
+  }
+  .no-print {
+    display: none;
+  }
+  #pageHeader {
+    display: none;
+  }
+  .libre {
+    border: none;
+  }
+}
+
+.table-separator {
+  @media screen{height: 15px;}
+  //@media print{height: 100px;}
+}
+
+//affichage des nom des gens dans les cases
+.user-manage {
+  //@media screen{ display: none }
+  text-align: center;
+}
+
+// ****** \\
+// FOOTER \\
+// ****** \\
+
+html,body{
+  height: 100%
+}
+
+#site {
+  min-height: 100%;
+  position:relative;
+}
+
+#container,.row-fluid {
+  padding-bottom: 40px;
+}
+
+#footer {
+   text-align: center;
+   padding: 10px 0 20px 0;
+   border-top: 1px solid #ccc;
+
+   height: 20px;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   position: absolute;
+}
+
+}

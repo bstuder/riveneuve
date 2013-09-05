@@ -1,0 +1,129 @@
+@(state: Utils.LogState, titles: List[(String, List[String])])
+
+@*
+  This page allows the administrators to add and remove
+  titles and subtitles in the calendar.
+ *@
+
+@import Utils.emptyTitles
+
+@main {
+  <div id="contenu">
+    <div class="tabbable"> <!-- Only required for left/right tabs -->
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#tab1" data-toggle="tab">Arrangement</a></li>
+        <li><a href="#tab2" data-toggle="tab">Ajout</a></li>
+        <li><a href="#tab3" data-toggle="tab">Renommage</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="tab1">
+
+        <h3> Arrangement des catégories </h3>
+        <ul class="unstyled sortable">
+        @for(i <- 0 until titles.length) {
+        @defining(titles(i)){ t =>
+          <li>
+            <ul class="inline">
+              <li name="catlist" index=@i><h4>@t._1</h4></li>
+              <li><a onclick='deleteCat("@Html(t._1)");'><i class="icon-remove"></i></a></li>
+            </ul>
+            <ul class="list-stlye sortable">
+            @for(j <- 0 until t._2.length) {
+            @defining(t._2(j)){ sub => 
+              <ul class="inline">
+                <li name="subcatlist" index=@j tindex=@i>@sub</li>
+                <li><a onclick='deleteSubCat("@Html(t._1)","@Html(sub)");'><i class="icon-remove"></i></a></li>
+              </ul>
+            }
+            }
+            </ul>
+          </li>
+        }
+        }
+        </ul>
+    
+        <button class="btn btn-success" id="saveBut">Sauver</button>
+    
+        @if(!emptyTitles.isEmpty){
+          <h4> Catégories vides </h4>
+          <ul>
+          @for(et <- emptyTitles) {
+            <ul class="inline">
+              <li> @et </li>
+              <li><a onclick='deleteCat("@Html(et)");'><i class="icon-remove"></i></a></li>
+            </ul>
+          }
+          </ul>
+        }
+        </div>
+
+        <div class="tab-pane" id="tab2">
+
+        <h3> Ajouter une catégories </h3>
+        <form class="form-inline">
+        <input type="text" class="input" id="catfield" placeholder="Nouvelle catégorie">
+        <button type="submit"  
+                id="addcatBut"
+                class="btn btn-primary"/>
+                Ajouter 
+        </button>
+        </form>
+    
+        <h3> Ajouter une sous-catégories </h3>
+        <form class="form-inline">
+        <select id="catselect">
+          @for(t <- titles) {
+            <option> @t._1 </option>
+          }
+          @for(te <- emptyTitles){
+            <option> @te </option>
+          }
+        </select>
+        <input type="text" class="input" id="subcatfield" placeholder="Nouvelle sous-catégorie">
+        <button type="submit" 
+                id="addsubcatBut"
+                class="btn btn-primary"/>
+                Ajouter 
+        </button>
+        </form>
+        </div>
+
+        <div class="tab-pane" id="tab3">
+
+        <h3> Renommer une catégories </h3>
+        <form class="form-inline">
+        <select id="catselect_r">
+          @for(t <- titles) {
+            <option> @t._1 </option>
+          }
+          @for(te <- emptyTitles){
+            <option> @te </option>
+          }
+        </select>
+        <input type="text" class="input" id="cat_new_name" placeholder="Nouveau Nom">
+        <button type="submit" 
+                id="rename_cat_but"
+                class="btn btn-primary"/>
+                Renommer 
+        </button>
+        </form>
+    
+        <h3> Renommer une sous-catégories </h3>
+        <form class="form-inline">
+        <select id="subcatselect_r">
+          @for(sub <- titles.flatMap(_._2)) {
+            <option> @sub </option>
+          }
+        </select>
+        <input type="text" class="input" id="subcat_new_name" placeholder="Nouveau Nom">
+        <button type="submit" 
+                id="rename_subcat_but"
+                class="btn btn-primary"/>
+                Renommer 
+        </button>
+        </form>
+        </div>
+      </div>
+    </div>
+
+}(state, 0, 0, false, false)

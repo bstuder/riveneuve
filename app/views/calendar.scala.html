@@ -1,0 +1,22 @@
+@(logstate: Utils.LogState)(mtable: Utils.Table, lockable: Boolean, titles: List[(String, List[String])], lockView: Boolean = false, priorityView: Boolean = false)
+
+@import Utils.{Admin, User, Guest}
+
+@main{
+<div id="contenu">
+@{
+  val partialCal = genCalendar(logstate, mtable, titles, lockable) _
+
+  logstate match {
+    case Admin(_) if(lockView) => 
+      partialCal(true, true, false, true, false)
+    case Admin(_) if(priorityView) => 
+      partialCal(true, true, false, false, true)
+    case Admin(_) => 
+      partialCal(false, true, true, false, false)
+    case User(_) | Guest() => 
+      partialCal(false, false, false, false, false)
+  }
+}
+</div>
+}(logstate, mtable.m, mtable.y, true, true, !(lockView || priorityView), true)

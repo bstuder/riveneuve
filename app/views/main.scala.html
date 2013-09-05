@@ -1,0 +1,213 @@
+@(content: Html)(logstate: Utils.LogState, month: Int, year: Int, saveButton: Boolean = false, colorCode: Boolean = false, printable: Boolean = false, ymSelect: Boolean = false)
+
+@import Utils.{hasNewRegistrations, titles, Admin, User, Guest, MONTHS}
+@import java.util.Calendar
+
+@logLevel() = @{
+  logstate match {
+      case Admin(_) => 0
+      case User(_) => 1
+      case Guest() => 2
+      case _ => 100
+    }
+}
+@args() = @{"?m="+month+"&y="+year}
+
+@mkNavBar(loglvl: Int) = {
+@if(loglvl < 100) {
+<div class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="/calendar_view">Calendrier Riveneuve</a>
+    <ul class="nav">
+      @if(loglvl > 0) {
+      <li><a href='/calendar_view'>Planning</a></li>
+      } else {
+      <li class="dropdown">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        Planning 
+        <b class="caret"></b>
+      </a>
+      <ul class="dropdown-menu">
+        <li><a href='/calendar_view@args()'>Gestion du planning</a>
+        <li><a href='/lock_view@args()'>Verrouillage</a></li>
+        <li><a href='/priority_view@args()'>Gestion des priorités</a></li>
+        <li><a href='/category_view'>Gestion des catégories</a></li>
+      </ul>
+      </li>
+      }
+    </ul>
+    @if(loglvl == 0) {
+      <ul class="nav">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            Utilisateurs 
+            <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href='/signup_view'>Gestion des utilisateurs</a></li>
+            <li><a href='/password_view'>Changer de mot de passe</a></li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="nav">
+        <li><a href='/statistics_view'>Statistiques</a></li>
+      </ul>
+    }
+    @if(printable){
+    <ul class="nav">
+      <li><a href="javascript:export_calendar()">Exporter</a></li>
+    </ul>
+    }
+    @if(colorCode){
+    <ul class="nav">
+      <li class="dropdown">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        Code couleur
+        <b class="caret"></b>
+      </a>
+      <ul class="dropdown-menu">
+        @printColorCode()
+      </ul>
+      </li>
+    </ul>
+    }
+    @if(loglvl == 1) {
+    <ul class="nav">
+      <li><a href='/password_view'>Changer de mot de passe</a></li>
+    </ul>
+    }
+    <ul class="nav">
+      <li><a href='/submit_logout'>Déconnexion</a></li>
+    </ul>
+  </div>
+</div>
+}
+}
+
+@adminEvent() = {
+  @defining(hasNewRegistrations) { newreg =>
+  <div @if(newreg._1) {id='notify' title='Marquer comme vu.' onclick="notified();"} else {id='notnotify'}> 
+    @if(newreg._1) {
+      Nouvel<br /> 
+      évènement<br /> 
+      le @newreg._2
+    } else {
+      Pas de nouvel événement
+    }
+  </div>
+  }
+}
+
+@ymselect() = {
+  @if(ymSelect){
+    <div class="monthyear">
+      <select id='mselect' onchange="reloadM(this,@month)">
+      @for(m <- MONTHS) {
+        <option value=@m._1>@m._2</option>
+      }
+      </select>
+      <br />
+      <select id='yselect' onchange="reloadY(this,@year)">
+        @* 
+         * The admin sees the year 2013 -> current
+         * The Users sees one year ahead and one year in the past 
+         *@
+        @defining(Calendar.getInstance().get(Calendar.YEAR)) {curYear => 
+          @defining(logstate match {
+                   case Admin(_) => 2013 
+                   case User(_) | Guest() if(curYear - 1 < 2013) =>  2013
+                   case User(_) | Guest() => curYear - 1}) {startYear =>
+            @for(y <- startYear to curYear + 1) {
+              <option value=@y>@y</option>
+            }
+          }
+        }
+      </select>
+    </div>
+  }
+}
+
+@printColorCode() = {
+  @if(colorCode) {
+    <table class="table table-bordered table-condensed colorcode">
+      <tr><td class="registerClear"      name="square">Disponible</td></tr>
+      <tr><td class="registerSelected"   name="square">Sélectionné</td></tr>
+      <tr><td class="registerPriority"   name="square">Prioritaire</td></tr>
+      <tr><td class="registerFull"       name="square">Complet</td></tr>
+      <tr><td class="registerRegistered" name="square">Enregistré</td></tr>
+      <tr><td class="inpast"             name="square">Date passée</td></tr>
+      <tr><td class="outmonth"           name="square">Hors-mois</td></tr>
+      <tr><td class="lockRegistered"     name="square">Verrouillé</td></tr>
+    </table>
+  }
+}
+
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Bienvenue le système de calendrier!</title>
+    <link type="text/css" rel="stylesheet" media='screen' href="@{logstate match {
+         case Admin("admin") => routes.Assets.at("admin.min.css")
+         case Admin(_)       => routes.Assets.at("subadmin.min.css")
+         case _              => routes.Assets.at("user.min.css")
+       }}" /> 
+    <link type="text/css" rel="stylesheet" media='screen' href=@routes.Assets.at("css/bootstrap.min.css") />
+    <script src="@routes.Assets.at("js/full.js")" type="text/javascript"></script>
+  </head>
+  <body>
+    <div id='site'>
+      @mkNavBar(logLevel())
+      <div id='pageHeader'>
+        <div id='logo'>
+          <a href="http://www.riveneuve.ch">
+            <img src="@{logstate match {
+                       case Admin("admin") => routes.Assets.at("img/logo_rn_admin.jpg")
+                       case Admin(_)       => routes.Assets.at("img/logo_rn_subadmin.jpg")
+                       case _              => routes.Assets.at("img/logo_rn_ok.jpg")
+                     }}"/>
+          </a>
+        </div>
+      </div>
+      <div class="container-fluid" id='container'>
+        <div class="row-fluid">
+          <div class="span2">
+            <br/>
+            @if(saveButton){
+              <button onclick="saveData()" 
+                 id='saveButton' 
+                 class="btn btn-small btn-success disabled" 
+                 type="button">
+                  Sauver les modifications
+              </button>
+            }
+            <br/><br/>
+            @{logstate match {
+              case Admin(_) | User(_) | Guest() => ymselect()
+              case _ => 
+              }
+            }
+            @{logstate match {
+              case Admin(_) => adminEvent() 
+              case _ => 
+              }
+            }
+          </div>
+          <div class="span9 offset1">
+            @content
+          </div>
+        </div>
+      </div>
+      <div id='footer'>
+        En cas de problème, remarque ou suggestion : 
+        <a href="mailto:riveneuve.planning@@gmail.com">Nous Contacter</a>
+      </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+    function get_my() {
+      return {m: @month, y: @year};
+    }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+@(logstate: Utils.LogState, m: Int, y: Int)
+@import Utils.{MONTHS, getStatMap, allUsers, titles}
+@import java.util.Calendar
+
+@main {	
+  <div id="contenu">
+    @defining(getStatMap(y, if(m > 0) Some(m) else None)) {map =>
+    @defining(map match { 
+        case imap if(imap.size == 0) => 1
+        case imap => map.values.map(_ match {
+          case iimap if(iimap.size == 0) => 1
+          case iimap => iimap.values.max
+        }).max
+      }
+    ) {maxinsc =>
+    <div>
+      <select id='ysel' onchange="reloadY(this,@y);">
+        @defining(Calendar.getInstance().get(Calendar.YEAR)) {curYear =>
+          @for(yea <- 2013 to curYear + 1) {
+            <option value=@yea @if(yea==y){selected="selected"}>@yea</option>
+          }
+        }
+      </select>
+
+      <select id='msel' onchange="reloadM(this,@m);">
+        <option value="-1">Tous</option>
+      @for(mon <- MONTHS) {
+        <option value=@mon._1 @if(mon._1==m){selected="selected"}>@mon._2</option>
+      }
+      </select>
+
+      <input type="submit" value="Exporter" onclick="genStat();"/>
+    </div>
+  
+    <div class="table-separator"></div>
+
+    <div id='stat'>
+      <table class="table week">
+        <tr>
+          <td />
+          @for(title <- titles.map(_._1)) {
+            <td>@title</td>
+          }
+        </tr>
+        @for(user <- allUsers) {
+          <tr>
+            <td>@user</td>
+            @for(title <- titles.map(_._1)) {
+              <td>@map(title)(user)</td>
+            }
+          </tr>
+        }
+        <tr>
+          <td> Total </td>
+            @for(title <- titles.map(_._1)) {
+              <td>@map(title).map(_._2).sum</td>
+            }
+        </tr>
+      </table>
+    </div>
+    
+    <div class="table-separator"></div>     
+
+    <script type="text/javascript">
+    function genGraph(map,str) {
+      var d = [];      // First data series
+      var i = 0;
+      var names = [];
+
+      @for(user <- allUsers.reverse) {
+        names.push("@user");
+        d.push([map["@user"], i]);
+        i++;
+      }
+
+      drawit(str,d,i,names,@allUsers.length,@maxinsc);
+    }
+    </script>
+
+    @for(title <- titles.map(_._1)) {
+      <h3 style="text-align: center;">@Html(title)</h3>
+      <div id="bar-@Html(title)" style="height: @{allUsers.length * 40}px;"></div>
+      <script type="text/javascript">
+        genGraph(@{"{"+map(title).map(x => x._1 + ":" + x._2).mkString(",")+"}"},"bar-@Html(title)");
+      </script>
+    }
+
+  }
+  }
+  </div>
+}(logstate, m, y)
