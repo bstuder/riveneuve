@@ -2,7 +2,7 @@ package controllers
 
 import play.api.mvc.{Controller, Session, Request, AnyContent}
 import play.api.db.DB // db
-import play.api.Play.current 
+import play.api.Play.current
 import play.api.templates.Html
 import anorm.{SQL, SimpleSql, ~} // sql
 import anorm.SqlParser.{str, int, scalar, flatten} //sql parser
@@ -26,8 +26,8 @@ object Utils extends Controller {
     try {
       DB.withConnection { implicit conn =>
         ttype match {
-          case Atomic() => conn.setAutoCommit(false) 
-          case Committed() => //autocmmit is true by default : conn.setAutoCommit(true) 
+          case Atomic() => conn.setAutoCommit(false)
+          case Committed() => //autocmmit is true by default : conn.setAutoCommit(true)
         }
 
         block(conn)
@@ -44,14 +44,14 @@ object Utils extends Controller {
     val filtComma = """,\s*\n\s*""".r.replaceAllIn(filtEmpty,",")
     Html(filtComma)
   }
-        
+
   def get_registered_users_map(month: Int, year: Int): HashMap[(Int,String,String),String] = {
     transaction(Committed()){ implicit conn =>
       try {
         val u_reg = SQL(
           """
             select day,title,subtitle,name
-            from registrations,users 
+            from registrations,users
             where registrations.username=users.username and
                   month={m} and
                    year={y}
@@ -89,7 +89,7 @@ object Utils extends Controller {
             where username != 'admin'
           """
         ).as(str("username") *).sorted
-         
+
         allUsers = userlist
         userlist
       }
@@ -105,7 +105,7 @@ object Utils extends Controller {
       try {
         val names = SQL(
           """
-            select username,name from users 
+            select username,name from users
             where username != 'admin'
           """
         ).as(str("username") ~ str("name") map(flatten) *)
@@ -117,7 +117,7 @@ object Utils extends Controller {
       }
     }(Nil)
   }
-  
+
   // table of table in Javascript format. : [[username, name], ...]
   def genAllUsersString(): String = {
     val ret = "[" + genAllNames.map(x => "[\"" + x._1 + "\",\"" + x._2 + "\"]").mkString(",") + "]"
@@ -157,12 +157,12 @@ object Utils extends Controller {
             )
           """
         ).as(str("username") *).filter(_ != "admin").sorted
-        
+
         normalUsers = nuserlist
         nuserlist
       }
       catch {
-        case _ => Nil 
+        case _ => Nil
       }
     }(Nil)
   }
@@ -198,8 +198,26 @@ object Utils extends Controller {
           """
         ).on(
           "y" -> year,
-          "m" -> month 
-        ).as(str("data") singleOpt).getOrElse("") 
+          "m" -> month
+        ).as(str("data") singleOpt).getOrElse("")
+      }
+      catch {
+        case _ => ""
+      }
+    }("")
+  }
+
+  def get_mail(username: String): String = {
+    transaction(Committed()){ implicit conn =>
+      try {
+        SQL(
+          """
+            select mail from mails
+            where username={u}
+          """
+        ).on(
+          "u" -> username
+        ).as(str("mail") singleOpt).getOrElse("")
       }
       catch {
         case _ => ""
@@ -217,7 +235,7 @@ object Utils extends Controller {
   val ERRFIRST = "erPas besoin de définir de mot de passe pour cet utilisateur."
   val INVALARG = "erInvalid arguments"
 
-  def date(key: String): Int = { 
+  def date(key: String): Int = {
     val cal = Calendar.getInstance()
     cal.setFirstDayOfWeek(Calendar.MONDAY)
 
@@ -238,13 +256,13 @@ object Utils extends Controller {
   }
 
   var titles: List[(String, List[String])] = Nil
-  var emptyTitles: List[String] = Nil 
+  var emptyTitles: List[String] = Nil
 
   // first generation (after re-compilation)
   regenTitles()
 
   def regenTitles() = {
-    titles = genTitles 
+    titles = genTitles
     emptyTitles = genEmptyTitles
   }
 
@@ -283,11 +301,11 @@ object Utils extends Controller {
       ).as(scalar[Int] single)
     }
     catch {
-      case _ => 0 
+      case _ => 0
     }
     }(0)
   }
-  
+
   // In category, it is possible to create titles without
   // a subtitle. If no subtitle is attached, it will not
   // be shown in the calendar. The empty titles
@@ -307,7 +325,7 @@ object Utils extends Controller {
         ).as(str("title") *)
       }
       catch {
-        case _ => Nil 
+        case _ => Nil
       }
     }(Nil)
   }
@@ -329,7 +347,7 @@ object Utils extends Controller {
     val t = tup._2 //title
     val s = tup._3 //subtitle
     val st = state
-    
+
     def get_name: String = state match {
         case AlreadyReg(name) => name
         case Full(name) => name
@@ -337,7 +355,7 @@ object Utils extends Controller {
     }
 
     def state_str: String = state match {
-        case Locked_() => "Locked" 
+        case Locked_() => "Locked"
         case AlreadyReg(_) => "Registered"
         case Full(_) => "Full"
         case Priority() => "Priority"
@@ -364,12 +382,12 @@ object Utils extends Controller {
     val nbrOfDays: Int = {
       gcal.getActualMaximum(Calendar.DAY_OF_MONTH)
     }
-    
-    // between 0 -> 6 
+
+    // between 0 -> 6
     val firstDayOfMonth: Int = {
       (gcal.get(Calendar.DAY_OF_WEEK) - 2 + 7) % 7
     }
-    
+
     val weekOfYear: Int = {
       gcal.get(Calendar.WEEK_OF_YEAR)
     }
@@ -451,8 +469,8 @@ object Utils extends Controller {
     // Returns a state string used in Javascript.
     def getState(day: Int, tidx: Int): String = {
       getCell(day, tidx) match {
-        case Some(cell) => cell.state_str 
-        case None => "Clear" 
+        case Some(cell) => cell.state_str
+        case None => "Clear"
       }
     }
 
@@ -466,13 +484,19 @@ object Utils extends Controller {
   }
 
   /*****************
-  * LOGGING STATES * 
+  * LOGGING STATES *
   ******************/
   abstract class LogState
   case class Admin(name: String) extends LogState  // Logged with administrator rights.
   case class User(name: String) extends LogState   // Logged as user
   case class Guest() extends LogState              // Logged as guest
   case class NotLog() extends LogState             // Not logged
+
+  def get_username(lg: LogState): String = lg match {
+    case Admin(name) => name
+    case User(name) => name
+    case _ => ""
+  }
 
   /*****************
   * CRAZY IMPLICIT *
@@ -491,7 +515,7 @@ object Utils extends Controller {
     if(name == "admin")
       Admin("admin")
     else if(name == "guest")
-      Guest() 
+      Guest()
     else if(!userExists(name))
       NotLog()
     else {
@@ -505,7 +529,7 @@ object Utils extends Controller {
           ).on(
             "u" -> name
           ).as(scalar[Long] single)
-        
+
           if(count == 0)
             User(name)
           else
@@ -523,12 +547,22 @@ object Utils extends Controller {
   ************/
   def isAdmin(session: Session) = getStat(session) match {
     case Admin(_) => true
-    case _ => false 
+    case _ => false
   }
 
   def isLogged(session: Session) = getStat(session) match {
     case Admin(_) | User(_) => true
-    case _ => false 
+    case _ => false
+  }
+
+  val GUEST_USR = "guest"
+  val GUEST_PASS = "guest-rive"
+
+  def isGuestLog(query: Map[String,Seq[String]]): Boolean = {
+    val username = query("username")(0)
+    val pass = query("password")(0)
+
+    username == GUEST_USR && pass == GUEST_PASS
   }
 
   def isGuest(session: Session) = getStat(session) match {
@@ -544,7 +578,7 @@ object Utils extends Controller {
   def checkRequest(arg: String*)(nums: String*)(implicit request: Request[AnyContent]): Boolean = {
     val args = arg ++ nums
     request.body.asFormUrlEncoded match {
-      case Some(query) => args.forall(x => query.contains(x)) && 
+      case Some(query) => args.forall(x => query.contains(x)) &&
                           args.forall(x => query(x) != Nil) &&
                           nums.forall(x => isNumber(query(x)(0)))
       case None => false
@@ -622,13 +656,13 @@ object Utils extends Controller {
         val filtered = SQL(
           """
             select day, title, subtitle, registrations.username, name
-            from registrations, users 
+            from registrations, users
             where registrations.username=users.username and
                   month={m} and
                    year={y}
           """
         ).on("y" -> year,
-             "m" -> month).as(int("day") ~ str("title") ~ str("subtitle") ~ str("username") ~ str("name") 
+             "m" -> month).as(int("day") ~ str("title") ~ str("subtitle") ~ str("username") ~ str("name")
                               map{case d~t~s~u~n => ((d,t,s),u,n)} *)
 
         /* Split in two lists, one with our registration, and the other
@@ -638,15 +672,15 @@ object Utils extends Controller {
           case User(user)  => x._2 == user
           case _           => false
         })
-      
+
         val locked = SQL(
           """
             select day, title, subtitle
             from locked
-            where year={y} and 
+            where year={y} and
                  month={m}
           """
-        ).on("y" -> year, 
+        ).on("y" -> year,
              "m" -> month).as(int("day") ~ str("title") ~ str("subtitle") map(flatten) *)
 
         val priority = SQL(
@@ -658,7 +692,7 @@ object Utils extends Controller {
           """
         ).on("y" -> year,
              "m" -> month).as(int("day") ~ str("title") ~ str("subtitle") map(flatten) *)
-      
+
         for(x <- mine)
           mtable.addCell(new Cell(AlreadyReg(x._3), x._1))
 
@@ -678,8 +712,8 @@ object Utils extends Controller {
         case _ =>
       }
     }()
-    
-    // Is this right? 
+
+    // Is this right?
     mtable
   }
 
@@ -691,7 +725,7 @@ object Utils extends Controller {
         val count = SQL(
           """
             select count(*) from monthunlocked
-            where year={y} and 
+            where year={y} and
                  month={m}
           """
         ).on("y" -> year,
@@ -716,7 +750,7 @@ object Utils extends Controller {
         val count = SQL(
           """
             select count(*) from registrations
-            where year={y} and 
+            where year={y} and
                  month={m}
           """
         ).on("y" -> year,
@@ -765,7 +799,7 @@ object Utils extends Controller {
       "Le nom d'utilisateur ne peut pas contenir de majuscule"
     else if(input matches ".* .*")
       "Le nom d'utilisateur ne peut pas contenir d'espace"
-    else 
+    else
       "Le nom d'utilisateur contient des caractères invalides : " + input.replaceAll("""[a-z]""","").distinct.mkString(" ")
   }
 
@@ -780,7 +814,7 @@ object Utils extends Controller {
       "Le nom abrégé est trop court"
     else if(input matches "^.{"+(MAX+1)+",}$")
       "Le nom abrégé est trop long"
-    else 
+    else
       ""
   }
 
@@ -791,6 +825,12 @@ object Utils extends Controller {
   // Tests if the string contains only spaces.
   def isempty(input: String): Boolean = {
     input matches """^\s*$"""
+  }
+
+  // TODO recheck this
+  def is_mail(input: String): String = {
+    val check = input matches """[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"""
+    if(check || input == "") "" else "l'adresse mail n'est pas valide"
   }
 
  /**************
@@ -807,9 +847,9 @@ object Utils extends Controller {
       case None => ("", ssql => ssql)
     }
 
-    val sqlreq = 
+    val sqlreq =
       """
-        select username, title from registrations 
+        select username, title from registrations
         where year={y}
       """ + optargs._1
 
@@ -817,7 +857,7 @@ object Utils extends Controller {
       try {
         val req = SQL(sqlreq).on("y" -> year)
         val rawdata = optargs._2(req).as(str("username") ~ str("title") map(flatten) *)
-        
+
         rawdata.distinct.map(x => (x._1, x._2, rawdata.count(_ == x)))
       }
       catch {

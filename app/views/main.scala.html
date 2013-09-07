@@ -45,12 +45,9 @@
           </a>
           <ul class="dropdown-menu">
             <li><a href='/signup_view'>Gestion des utilisateurs</a></li>
-            <li><a href='/password_view'>Changer de mot de passe</a></li>
+            <li><a href='/statistics_view'>Statistiques</a></li>
           </ul>
         </li>
-      </ul>
-      <ul class="nav">
-        <li><a href='/statistics_view'>Statistiques</a></li>
       </ul>
     }
     @if(printable){
@@ -71,9 +68,9 @@
       </li>
     </ul>
     }
-    @if(loglvl == 1) {
+    @if(loglvl <= 1) {
     <ul class="nav">
-      <li><a href='/password_view'>Changer de mot de passe</a></li>
+      <li><a href='/password_view'>Paramètres</a></li>
     </ul>
     }
     <ul class="nav">

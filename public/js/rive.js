@@ -20,7 +20,7 @@ function reloadM(elem,month) {
   else
     str = location.search.replace(/m=-?\d+/,"m=" + month);
     //case where we have already m=.&y=.
-  
+
   location.href = location.pathname + str;
 }
 
@@ -62,22 +62,22 @@ function isSecure(e, pass) {
   var lower=/[a-z]/.test(pass);
   var digit=/[0-9]/.test(pass);
   var sevenChar=/(\S.*?){7,}/.test(pass);
-     
+
   if(upper + lower + digit < 2)
     e.html('Le mot de passe doit contenir 2 des 3 catégories : <ul><li>Majucule</li><li>minuscule</li><li>chiffre</li></ul>');
   else if(!sevenChar)
     e.html('Le mot de passe doit faire au moins 7 caractères.');
   else
-   return true; 
-  
+   return true;
+
   return false;
 }
 
 //#END MAIN#
 
-$(function(){ 
+$(function(){
   $("#form_login").submit(function(event) {
-    event.preventDefault(); 
+    event.preventDefault();
     var username = $('#inputUsername').val();
     var password = $('#inputPassword').val();
     var e = $('#error_login');
@@ -88,20 +88,20 @@ $(function(){
         else
           var cattr = (response.substring(0, 2) == 'ok') ? 'is_info' : 'is_error';
           e.attr('class',cattr);
-    
+
         e.html(response.substring(2));
       }
     );
   });
-  
+
   $("#form_first").submit(function(event) {
-    event.preventDefault(); 
-  
+    event.preventDefault();
+
     var username  = $('#firstUsername').val();
     var password1 = $('#inputPassword1').val();
     var password2 = $('#inputPassword2').val();
     var e = $('#error_login');
-  
+
     if(password1 != password2)
         e.attr('class','is_error').html('Les mots de passe diffèrent.');
     else if(!isSecure(e,password1))
@@ -126,13 +126,13 @@ function toggleVisibility() {
 
 $(function(){
   $("#form_reset").submit(function(event) {
-    event.preventDefault(); 
-  
+    event.preventDefault();
+
     var passc = $('#currentPassword').val();
     var pass1 = $('#inputPassword1').val();
     var pass2 = $('#inputPassword2').val();
     var e = $('#error_reset');
-  
+
     if(pass1 != pass2)
       e.attr('class','is_error').html('Les deux mots de passe ne correspondent pas.');
     else if(!isSecure(e, pass1))
@@ -148,28 +148,46 @@ $(function(){
   });
 });
 
+$(function(){
+  $("#form_mail_update").submit(function(event) {
+    event.preventDefault();
+
+    var nmail = $('#new_mail').val();
+    var e = $('#error_nmail');
+
+      $.post('/submit_new_mail',{nmail: nmail},
+        function(data) {
+          var cattr = (data.substring(0, 2) == 'ok') ? 'is_info' : 'is_error';
+          e.attr('class',cattr).html(data.substring(2));
+        }).done(function(){
+          $('#curr_mail').val(nmail);
+        });
+    });
+});
+
 //#END PASSWORD#
 
-$(function(){    
+$(function(){
   $("#signup").submit(function(event) {
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     var abr = $('#abrege').val();
     var u = $('#complete').val();
+    var mail = $('#mail').val();
     var a = $('#isadmin').prop('checked')
 
     if(a && !confirm('Voulez-vous vraiment créer un utilisateur avec les droits administrateur?'))
       return;
 
-    $.post("/submit_signup", {name: abr, username: u, isadmin: a}, 
+    $.post("/submit_signup", {name: abr, username: u, mail: mail, isadmin: a},
       function(data) {
         var e = $('#error_signup')
-        
+
         if(data.substring(0, 2) == 'ok') {
           $('#regusers').append('<div name='+u+'><li>'+u+'</li></div>');
           $('#submit_reset').append('<option>'+u+'</option>')
           $('#submit_delete').append('<option>'+u+'</option>')
-          
+
           var target = (a) ? '#submit_remove' : '#submit_add';
           $(target).append('<option>' + u + '</option>')
 
@@ -183,29 +201,29 @@ $(function(){
       }
     );
   });
-  
+
   $("#resetpass").submit(function(event) {
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     if(!confirm("Voulez-vous vraiment réinitialiser le mot de passe de cet utilisateur?"))
       return;
-    
-    $.post("/submit_reset_password", {username: $('#submit_reset').val()}, 
+
+    $.post("/submit_reset_password", {username: $('#submit_reset').val()},
       function(data) {
         var cattr = (data.substring(0, 2) == 'ok') ? "is_info" : "is_error";
         $('#error_reset').attr('class',cattr).html(data.substring(2));
       }
     );
   });
- 
+
   $("#adminremove").submit(function(event) {
-    event.preventDefault(); 
+    event.preventDefault();
     var u = $('#submit_remove option:selected').val();
-    
+
     if(u == '' || !confirm("Voulez-vous vraiment retirer les droits administrateur de l'utilisateur?"))
       return;
 
-    $.post("/submit_remove_admin", {username: u}, 
+    $.post("/submit_remove_admin", {username: u},
       function(data) {
         if(data.substring(0, 2) == 'ok') {
           $('#submit_add').append('<option>'+u+'</option>');
@@ -216,14 +234,14 @@ $(function(){
       }
     );
   });
-  
+
   $("#adminadd").submit(function(event) {
-    event.preventDefault(); 
+    event.preventDefault();
     var u = $('#submit_add').val();
-    
+
     if(u == '' || !confirm("Voulez-vous vraiment ajouter des droits administrateur à l'utilisateur?"))
       return;
-    
+
     $.post("/submit_add_admin", {username: u},
       function(data) {
         if(data.substring(0, 2) == 'ok') {
@@ -235,20 +253,20 @@ $(function(){
       }
     );
   });
- 
+
   $("#deleteuser").submit(function(event) {
-    event.preventDefault(); 
+    event.preventDefault();
 
     var u = $('#submit_delete').val();
-    
+
     if(!confirm("Voulez-vous vraiment supprimer cet utilisateur?"))
       return;
 
-    $.post("/submit_delete", {username: u}, 
+    $.post("/submit_delete", {username: u},
       function(data) {
         var e = $('#error_delete');
-        
-        if(data.substring(0, 2) == 'ok') {  
+
+        if(data.substring(0, 2) == 'ok') {
           $('#regusers div[name='+u+']').remove();
           $('#submit_delete option:selected').remove()
           $('#submit_add option').filter(function(i,e){return e.value == u}).remove()
@@ -259,7 +277,7 @@ $(function(){
         }
         else
           e.attr("class", "is_error");
-        
+
         e.html(data.substring(2));
       }
     );
@@ -331,7 +349,7 @@ function renameCat() {
 function renameSubcat() {
   var subcat_name = $('#subcatselect_r').val();
   var new_name = $('#subcat_new_name').val();
-  
+
   if(new_name == "")
     return;
 
@@ -377,12 +395,12 @@ function drawit(str,d,i,names,nbusers,maxinsc) {
       },
       yaxis : {
         min : 0,
-        noTicks: nbusers, 
+        noTicks: nbusers,
         autoscaleMargin : 1,
         tickFormatter: function (x) {
           if(x >= 0 && x < names.length && x == parseInt(x))
             return names[parseInt(x)];
-          else 
+          else
             return "";
         }
       },
@@ -415,7 +433,7 @@ function setAndMayToggle(elem,prefix) {
 
   var checked = !box.prop('checked')
   box.prop('checked',checked)
-    
+
   var clear = prefix + 'Clear';
   var selec = prefix + 'Selected';
   var unsel = prefix + 'Registered';
@@ -433,7 +451,7 @@ function setAndMayToggle(elem,prefix) {
     if(prefix == 'register' && checked) {
       td.attr('class', regis);
       return;
-    } else 
+    } else
       td.attr('class', checked ? regis : unsel);
   }
 
@@ -512,14 +530,14 @@ function click_cell(elem, day, title, subtitle) {
     jsel.append(last);
     // sorting
     function sortAlpha(a,b) {
-      return a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase() ? 1 : -1;  
-    } 
+      return a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase() ? 1 : -1;
+    }
     var jselSort = $('<select></select>').attr('id','selectof0');
     jsel.children().sort(sortAlpha).appendTo(jselSort);
 
     jli.append(jselSort);
     jul.append(jli);
-    
+
     var buttaction = 'submit_changes('+day+',"'+title+'","'+subtitle+'");';
     var butt = $('<input>').attr('type','submit').attr('value','Sauver').attr('id','submit_changes').attr('onclick',buttaction);
 
@@ -573,7 +591,7 @@ function set_gencal_submits(prefix) {
 
   $("#freetext").submit(
     function(event) {
-      event.preventDefault(); 
+      event.preventDefault();
       $.post("/submit_freetext", {m: my.m, y: my.y, t: $('#misc').val()},
         function(data) {
           var color = (data == "ok") ? "#aaffaa" : "ffaaaa";
@@ -585,7 +603,7 @@ function set_gencal_submits(prefix) {
 
   $("#submit_calendar").submit(
     function(event) {
-      event.preventDefault(); 
+      event.preventDefault();
 
       if(prefix == 'lock') {
         var route = "/submit_lock";

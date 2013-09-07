@@ -12,21 +12,10 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import Utils._
 
 object Posts extends Controller {
-
-  val GUEST_USR = "guest"
-  val GUEST_PASS = "guest-rive"
-
   // Burn the cookie.
   // Clean his temporary salt.
   def submit_logout = Action { implicit request =>
     Redirect("/").withNewSession
-  }
-
-  def isGuestLog(query: Map[String,Seq[String]]): Boolean = {
-    val username = query("username")(0) 
-    val pass = query("password")(0)
-
-    username == GUEST_USR && pass == GUEST_PASS 
   }
 
   def submit_login = Action { implicit request =>
@@ -861,6 +850,15 @@ object Posts extends Controller {
               "u" -> username
             ).execute()
 
+            SQL(
+              """
+                delete from mails 
+                where username={u}
+              """
+            ).on(
+              "u" -> username
+            ).execute()
+
  
             SQL(
               """
@@ -962,20 +960,17 @@ object Posts extends Controller {
   def submit_signup = Action { implicit request =>
     if(!isAdmin(session))
       Ok("erCette action est réservée à l'administrateur.")
-    else if(!checkRequest("name","username","isadmin")())
+    else if(!checkRequest("name","username","mail","isadmin")())
       BadRequest(INVALARG)
     else {
       val query = request.body.asFormUrlEncoded.get
       val name = query("name")(0)
       val username = query("username")(0)
+      val mail = query("mail")(0)
       val isadmin = query("isadmin")(0) == "true"
       
-      val err = (isName(name), isUsername(username)) match {
-        case("","") => ""
-        case("", err) => err
-        case(err,"") => err
-        case(err1,err2) => err1 + "<br \\><label for='hack'></label>" + err2
-      }
+      val sep = "<br \\><label for='hack'></label>"
+      val err = List(isName(name), isUsername(username), is_mail(mail)).filterNot(_ == "").mkString(sep)
       
       if(err != "")
         Ok("er" + err)
@@ -1002,6 +997,14 @@ object Posts extends Controller {
                 """
               ).on("u" -> username,
                    "n" -> name).execute()
+
+              SQL(
+                """
+                  insert into mails (username, mail) 
+                  values ({u}, {m})
+                """
+              ).on("u" -> username,
+                   "m" -> mail).execute()
  
               if(isadmin) {
                 SQL(
@@ -1071,6 +1074,57 @@ object Posts extends Controller {
           }
           catch {
             case _ => Ok("erContactez l'Administrateur (erreur: pass_res).")
+          }
+        }(Ok("er"))
+      }
+    }
+  }
+
+  def submit_new_mail = Action { implicit request =>
+    if(!(isLogged(session)))
+      Forbidden(views.html.forbidden())
+    else if(!checkRequest("nmail")())
+      BadRequest(INVALARG)
+    else {
+      val query = request.body.asFormUrlEncoded.get
+      val username = get_username(session)
+      val nmail = query("nmail")(0)
+      val err = is_mail(nmail)
+
+      if(err != "")
+        Ok("er" + err)
+      else {
+        transaction(Committed()){ implicit conn =>
+          try {
+            SQL(
+              """
+                insert into mails (username,mail)
+                select {u},{m}
+                where not exists (
+                  select 1 from mails
+                  where username={u}
+                )
+              """
+            ).on(
+              "u" -> username,
+              "m" -> nmail
+            ).execute()
+
+            SQL(
+              """
+                update mails
+                set mail={m}
+                where username={u}
+              """
+            ).on(
+              "u" -> username,
+              "m" -> nmail
+            ).execute()
+
+            Ok("okVotre adresse e-mail a bien été mise à jour.")
+          }
+          catch {
+            case _ => Ok("erContactez l'Administrateur (erreur: mail_up).")
           }
         }(Ok("er"))
       }

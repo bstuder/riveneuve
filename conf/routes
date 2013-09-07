@@ -50,6 +50,7 @@ GET     /signup_view                controllers.Views.signup_view
 POST    /submit_signup              controllers.Posts.submit_signup
 POST    /submit_delete              controllers.Posts.submit_delete
 POST    /submit_reset_password      controllers.Posts.submit_reset_password
+POST    /submit_new_mail            controllers.Posts.submit_new_mail
 
 # admin statistic view
 GET     /statistics_view            controllers.Views.statistics_view(m: Int ?= 0, y: Int ?= 0)
