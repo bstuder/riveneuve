@@ -5,7 +5,7 @@
 TODO
 
 target/
-project/*.new
+project/*.i
 project/project/
 project/target
 dbscript/riveneuve/
