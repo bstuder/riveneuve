@@ -739,11 +739,20 @@ object Posts extends Controller {
       c = r.createCell(0)
       c.setCellValue("Imprimé le:")
       c = r.createCell(1)
-      c.setCellFormula("today()")
+      val date_str:String = date("d")+"."+date("m")+"."+date("y")
+      c.setCellValue(date_str)
 
       // auto-sizing
       for (i <- 0 to subtitles.size)
         s.autoSizeColumn(i)
+
+      // can be very long => shan't be resized
+      val lines = mtable.freetext.split("""\n""")
+      for (i <- 0 until lines.length){
+        r = s.createRow(row_nbs+3+i)
+        c = r.createCell(0)
+        c.setCellValue(lines(i))
+      }
 
       wb.setSheetName(0, "planning")
 
