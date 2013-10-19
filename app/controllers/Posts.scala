@@ -682,12 +682,17 @@ object Posts extends Controller {
 
       cs_title.setAlignment(CellStyle.ALIGN_CENTER)
       
+      // header
+      r = s.createRow(row_nbs)
+      val c_head = r.createCell(0)
+      row_nbs += 2
+
       //titles
       r = s.createRow(row_nbs)
       row_nbs += 1
-      c = r.createCell(0)
-      c.setCellStyle(cs_title)
-      c.setCellValue(MONTHS(mtable.m-1)._2)
+      //c = r.createCell(0)
+      //c.setCellStyle(cs_title)
+      //c.setCellValue(MONTHS(mtable.m-1)._2)
       for (i <- 0 until spacedTitles.size){
         c = r.createCell(i+1)
         c.setCellStyle(cs_title)
@@ -735,7 +740,8 @@ object Posts extends Controller {
       }
 
       // footer
-      r = s.createRow(row_nbs+1)
+      row_nbs += 1
+      r = s.createRow(row_nbs)
       c = r.createCell(0)
       c.setCellValue("Imprimé le:")
       c = r.createCell(1)
@@ -746,13 +752,17 @@ object Posts extends Controller {
       for (i <- 0 to subtitles.size)
         s.autoSizeColumn(i)
 
+      row_nbs += 2
       // can be very long => shan't be resized
       val lines = mtable.freetext.split("""\n""")
       for (i <- 0 until lines.length){
-        r = s.createRow(row_nbs+3+i)
+        r = s.createRow(row_nbs+i)
         c = r.createCell(0)
         c.setCellValue(lines(i))
       }
+
+      //long header
+      c_head.setCellValue("Planning des présences bénévoles de "+MONTHS(mtable.m-1)._2)
 
       wb.setSheetName(0, "planning")
 
